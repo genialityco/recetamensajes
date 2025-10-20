@@ -1,6 +1,9 @@
 import * as PIXI from "pixi.js";
 import { GlowFilter } from "pixi-filters";
 
+
+
+console.log("🧙‍♂️ Potion Mixer Initialized!");
 // --- PIXI APP ---
 const app = new PIXI.Application();
 await app.init({
