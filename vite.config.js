@@ -1,11 +1,11 @@
 import { defineConfig } from 'vite';
-import path from 'path';
+import { resolve } from 'path';
 
 export default defineConfig({
-  base: './', // ✅ critical for static hosting (Netlify, Firebase, local dist)
+  base: './', // rutas relativas (ideal para hosting estático o subcarpetas)
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'), // allows "import x from '@/file'"
+      '@': resolve(__dirname, './src'),
     },
   },
   optimizeDeps: {
@@ -24,6 +24,12 @@ export default defineConfig({
     minify: 'esbuild',
     assetsInlineLimit: 4096,
     rollupOptions: {
+      // 👇 aquí definimos las páginas HTML que queremos compilar
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        admin: resolve(__dirname, 'admin.html'),
+        send: resolve(__dirname, 'send.html'),
+      },
       output: {
         manualChunks: {
           pixi: ['pixi.js', 'pixi-filters'],
