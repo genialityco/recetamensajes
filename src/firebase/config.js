@@ -1,16 +1,16 @@
-// Inicializa Firebase y exporta db (RTDB)
+// src/firebase/config.js
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyB0iYSMU7tuWyMw-q5h4VKSgCq5LTZJoM4",
-  authDomain: "lenovo-experiences.firebaseapp.com",
-  projectId: "lenovo-experiences",
-  storageBucket: "lenovo-experiences.firebasestorage.app",
-  messagingSenderId: "472633703949",
-  appId: "1:472633703949:web:c424fcf34b2f983c779f44",
-  measurementId: "G-HTNB9NGC2R",
-  databaseURL: "https://lenovo-experiences-default-rtdb.firebaseio.com",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
 };
 
 const fbApp = initializeApp(firebaseConfig);
