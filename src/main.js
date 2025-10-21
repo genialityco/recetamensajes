@@ -21,15 +21,18 @@ import {
   openRecipeModal,
   closeRecipeModal,
 } from "./ui/recipeModal.js";
+import { initSound } from "./audio/sound.js";
 
 // --- 1) PIXI APP ---
 await initApp();
+
+initSound();
 
 // --- 2) Bowl virtual (coincide con tu arte) ---
 const bowlArea = {
   centerX: () => screen().width * 0.52,
   rimY: () => screen().height * 0.68,
-  spawnW: () => screen().width * 0.32,
+  spawnW: () => screen().width * 0.45,
 };
 const getBowlArea = () => bowlArea;
 
@@ -125,4 +128,31 @@ onValue(controlsRef, (snap) => {
   } else {
     closeRecipeModal();
   }
+});
+
+/* =========================================================
+   Música de fondo (loop)
+   ========================================================= */
+
+// Crear y configurar el audio
+const bgMusic = new Audio("/musica_fondo.mp3");
+bgMusic.loop = true;
+bgMusic.volume = 0.4; // volumen moderado (0.0–1.0)
+bgMusic.preload = "auto";
+
+// ⚠️ Importante: los navegadores bloquean autoplay sin interacción,
+// así que esperamos un clic o toque antes de reproducir.
+const tryPlay = () => {
+  bgMusic.play().catch(() => {}); // silencioso si falla
+  document.removeEventListener("click", tryPlay);
+  document.removeEventListener("touchstart", tryPlay);
+};
+
+// Reintenta reproducir en la primera interacción
+document.addEventListener("click", tryPlay);
+document.addEventListener("touchstart", tryPlay);
+
+// También intenta reproducir automáticamente si el navegador lo permite
+bgMusic.play().catch(() => {
+  console.warn("Autoplay bloqueado, se activará al tocar la pantalla.");
 });

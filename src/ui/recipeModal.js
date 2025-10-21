@@ -1,20 +1,26 @@
 // src/ui/recipeModal.js
 
-// 💡 Preload del pergamino para que aparezca nítido
+// 💡 Preload de imágenes para que aparezcan nítidas
 (() => {
-  const img = new Image();
-  img.src = "/pergamino-01.png";
+  const imgs = [
+    "/pergamino-01.png",
+    "/LOGO_RECETA-GONDOLA.png",
+    "/LOGOS_GONDOLA.png",
+  ];
+  imgs.forEach((src) => {
+    const i = new Image();
+    i.src = src;
+  });
 })();
 
 // ========== Estilos (pergamino + tipografía manuscrita) ==========
 const style = document.createElement("style");
 style.textContent = `
-  /* Importamos ambas fuentes */
   @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Shadows+Into+Light+Two&display=swap');
 
   :root {
     --pm-bg: rgba(10, 12, 18, 0.55);
-    --pm-txt: #2b1a08; /* tono tinta café oscuro */
+    --pm-txt: #2b1a08;
     --pm-sub: #3f2a11;
     --pm-brd: rgba(0,0,0,.2);
     --pm-shadow: 0 20px 50px rgba(0,0,0,.5);
@@ -27,13 +33,8 @@ style.textContent = `
     background: radial-gradient(90% 90% at 50% 50%, var(--pm-bg), rgba(10,12,18,.75));
     backdrop-filter: blur(8px);
   }
+  .pm-overlay[aria-hidden="false"], .pm-modal-backdrop[aria-hidden="false"] { display: grid; }
 
-  .pm-overlay[aria-hidden="false"],
-  .pm-modal-backdrop[aria-hidden="false"] {
-    display: grid;
-  }
-
-  /* =================== Overlay (Cargando) =================== */
   .pm-card {
     border: 1px solid var(--pm-brd);
     border-radius: 16px;
@@ -42,134 +43,125 @@ style.textContent = `
     animation: pm-pop .22s ease-out both;
     box-shadow: var(--pm-shadow);
     background: rgba(30,30,40,.85);
+    padding: 16px 20px;
   }
 
-  .pm-center {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-  }
-
+  .pm-center { display: flex; align-items: center; justify-content: center; gap: 10px; }
   .pm-spin {
     width: 18px; height: 18px; border-radius: 50%;
-    border: 3px solid rgba(255,255,255,.2);
-    border-top-color: #7dd3fc;
+    border: 3px solid rgba(255,255,255,.2); border-top-color: #7dd3fc;
     animation: pm-spin 1s linear infinite;
   }
 
-  /* =================== Modal (Receta - 95vw con scroll) =================== */
   .pm-modal {
-    width: 95vw;
-    height: 95vh; 
-    max-width: 95vw;
-    max-height: 95vh;
-    border-radius: 12px; 
-    border: 1px solid var(--pm-brd);
-    box-shadow: var(--pm-shadow); 
-    
-    background: url("/pergamino-01.png") center/cover no-repeat;
-    
-    padding: clamp(30px, 5vmin, 60px); 
-    
-    color: var(--pm-txt);
-    /* Aplicamos Shadows Into Light Two como fuente principal para el cuerpo */
-    font-family: 'Shadows Into Light Two', cursive;
-    font-size: 3vmin; 
-    line-height: 1.4;
     position: relative;
+    width: 95vw;
+    height: 95vh;
+    border-radius: 12px;
+    border: 1px solid var(--pm-brd);
+    box-shadow: var(--pm-shadow);
+    background: url("/pergamino-01.png") center/cover no-repeat;
+    padding: clamp(30px, 5vmin, 60px);
+    color: var(--pm-txt);
+    font-family: 'Shadows Into Light Two', cursive;
+    font-size: 3vmin;
+    line-height: 1.4;
     animation: pm-pop .25s ease-out both;
+    overflow: hidden;
   }
 
   .pm-modal::after {
     content: "";
     position: absolute;
     inset: 0;
-    border-radius: 12px; 
+    border-radius: 12px;
     background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.1), rgba(0,0,0,0.15));
     pointer-events: none;
   }
-  
+
   .pm-content-wrapper {
     display: flex;
     flex-direction: column;
     height: 100%;
-    max-height: 100%; 
-    overflow-y: auto; 
-    padding-right: 15px; 
-  }
-
-  .pm-row {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 2vmin; 
-    flex-shrink: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    padding-right: 15px;
   }
 
   .pm-title {
-    /* Mantenemos Dancing Script para el título para más elegancia */
     font-family: 'Dancing Script', cursive;
-    font-size: 6vmin; 
+    font-size: 6vmin;
     font-weight: 700;
     margin: 0;
     text-shadow: 1px 1px 3px rgba(0,0,0,.35);
-    flex-shrink: 0;
-  }
-
-  .pm-btn {
-    background: rgba(60, 50, 40, 0.4);
-    color: var(--pm-txt);
-    border: 1px solid rgba(0,0,0,0.3);
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-family: 'Shadows Into Light Two', cursive; /* Usamos Shadows para el botón */
-    font-size: 2vmin; 
-    font-weight: 600;
-    transition: background .2s ease;
-    flex-shrink: 0;
-  }
-  .pm-btn:hover {
-    background: rgba(100, 80, 60, 0.5);
+    margin-top: 50px;
   }
 
   .pm-sub {
-    font-size: 3vmin; 
+    font-size: 3vmin;
     margin-bottom: 3vmin;
     font-style: italic;
     color: var(--pm-sub);
-    flex-shrink: 0;
   }
 
   .pm-section-title {
     margin-top: 3vmin;
     font-weight: 700;
-    font-size: 4vmin; 
+    font-size: 4vmin;
     border-bottom: 2px dashed rgba(0,0,0,0.4);
     padding-bottom: 8px;
-    flex-shrink: 0;
   }
-  
+
   .pm-ul {
     margin: 1vmin 0 0 4vmin;
     padding: 0;
     list-style-type: "🌿";
-    flex-grow: 1; 
-    flex-shrink: 0; 
-    display: block; 
   }
-  
+
   .pm-ul li {
-    /* AUMENTO DE ESPACIO VERTICAL AQUÍ */
-    margin: 3vmin 0; 
-    font-size: 4vmin; 
+    margin: 3vmin 0;
+    font-size: 4vmin;
     line-height: 1.2;
     padding-left: 0.5vmin;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
   }
+
+  /* ===== Logos grandes en esquinas ===== */
+  .pm-logo {
+    position: absolute;
+    top: 0;
+    width: 250px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.25));
+    opacity: 0.98;
+    pointer-events: none;
+  }
+  .pm-logo.left  { left: clamp(10px, 2vmin, 24px); }
+  .pm-logo.right { right: clamp(10px, 2vmin, 24px); }
+
+/* ===== Botón cerrar abajo a la izquierda ===== */
+.pm-close-btn {
+  position: absolute;
+  left: clamp(16px, 2.5vmin, 28px);
+  bottom: clamp(28px, 2.5vmin, 28px);
+  background: rgba(60, 50, 40, 0.6);
+  color: var(--pm-txt);
+  border: 1px solid rgba(0,0,0,0.3);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-family: 'Shadows Into Light Two', cursive;
+  font-size: 2.6vmin;
+  font-weight: 600;
+  transition: background .2s ease;
+  z-index: 5;
+}
+.pm-close-btn:hover { background: rgba(100, 80, 60, 0.65); }
+
 
   @keyframes pm-pop {
     from { opacity: 0; transform: translateY(8px) scale(.97); }
     to { opacity: 1; transform: none; }
   }
-
   @keyframes pm-spin { to { transform: rotate(360deg); } }
 `;
 document.head.appendChild(style);
@@ -194,17 +186,24 @@ export function initRecipeModal() {
   `;
   document.body.appendChild(overlayEl);
 
-  // Modal (Receta en pergamino) - Estructura optimizada
+  const BASE = import.meta?.env?.BASE_URL || "/";
+
+  // Modal principal con logos invertidos y botón centrado arriba
   backdropEl = document.createElement("div");
   backdropEl.className = "pm-modal-backdrop";
   backdropEl.setAttribute("aria-hidden", "true");
   backdropEl.innerHTML = `
     <div class="pm-modal" role="dialog" aria-modal="true" aria-labelledby="pm-rec-title">
+      <!-- Logos decorativos -->
+      <img class="pm-logo left"  src="${BASE}LOGO_RECETA-GONDOLA.png" alt="" />
+      <img class="pm-logo right" src="${BASE}LOGOS_GONDOLA.png" alt="" />
+
+      <!-- Botón cerrar centrado arriba -->
+      <button id="pm-rec-close" class="pm-close-btn" type="button" aria-label="Cerrar receta">Cerrar</button>
+
+      <!-- Contenido scrollable -->
       <div class="pm-content-wrapper">
-        <div class="pm-row">
-          <h2 id="pm-rec-title" class="pm-title">Receta</h2>
-          <button id="pm-rec-close" class="pm-btn" type="button">Cerrar</button>
-        </div>
+        <h2 id="pm-rec-title" class="pm-title">Receta</h2>
         <p id="pm-rec-desc" class="pm-sub"></p>
         <div class="pm-section-title">Ingredientes</div>
         <ul id="pm-rec-ings" class="pm-ul"></ul>
@@ -213,7 +212,6 @@ export function initRecipeModal() {
   `;
   document.body.appendChild(backdropEl);
 
-  // Cierre
   backdropEl.addEventListener("click", (ev) => {
     if (ev.target === backdropEl) closeRecipeModal();
   });
@@ -255,7 +253,6 @@ export function openRecipeModal(recipe) {
     list.innerHTML = "";
     (recipe?.ingredients || []).forEach((i) => {
       const li = document.createElement("li");
-      // Formato con cantidad en negrita para mejor visibilidad
       li.innerHTML = `<span>${i?.qty ? `<strong>${i.qty}</strong> ` : ""}${
         i?.name || ""
       }</span>`;

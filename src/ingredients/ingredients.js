@@ -2,10 +2,14 @@ import * as PIXI from "pixi.js";
 import { stage, screen } from "../app/pixiApp.js";
 import { GlowFilter } from "@pixi/filter-glow";
 import { KawaseBlurFilter } from "@pixi/filter-kawase-blur";
+import { playPop } from "../audio/sound.js";
 
 const ingredientImageURLs = [
   "/images/Tomato_with_Leaf.H03.png",
   "/images/chili_sauce.L16.png",
+  "/images/CEBOLLA.png",
+  "/images/PIMIENTA.png",
+  "/images/PIMENTON.png",
 ];
 
 const ingredientTextures = {};
@@ -112,6 +116,7 @@ export function addIngredient({
     baseScale,
     glowFilter,
     glowPhase: Math.random() * Math.PI * 2,
+    popped: false,
   });
 }
 
@@ -148,6 +153,13 @@ export function updateIngredients(bowlArea) {
     spr.rotation = obj.rot;
 
     if (spr.y >= rimY) {
+      if (!obj.popped) {
+        obj.popped = true;
+        try {
+          playPop();
+        } catch {}
+      }
+
       obj.vy = -Math.abs(obj.vy) * 0.25;
       obj.vx *= 0.6;
       obj.glowFilter.outerStrength *= 0.98;

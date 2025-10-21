@@ -11,7 +11,7 @@
 
   <!-- Preload de imágenes para transiciones más rápidas -->
   <link rel="preload" as="image" href="/splash.jpeg">
-  <link rel="preload" as="image" href="/fondo_form.jpeg">
+  <link rel="preload" as="image" href="/fondo_form_1.png">
 
   <style>
     :root {
@@ -56,7 +56,7 @@
       position: relative;
       width: 100%;
       min-height: 100svh;
-      background: url("/fondo_form.png") center/cover no-repeat;
+      background: url("/fondo_form_1.png") center/cover no-repeat;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -207,18 +207,31 @@
   </main>
 
   <script type="module">
-    // 1) Splash
     const splash = document.getElementById("splash");
     const main = document.getElementById("main");
-    const wait = (ms) => new Promise(r => setTimeout(r, ms));
-    const preload = (src) => new Promise(res => { const img = new Image(); img.onload = res; img.onerror = res; img.src = src; });
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-    (async () => {
-      await Promise.race([Promise.all([preload("/fondo_form.jpeg")]), wait(2000)]);
+    let skip = false; // bandera para detectar clic
+
+    // Al hacer clic o tocar el splash, saltar el conteo
+    splash.addEventListener("click", () => {
+      if (skip) return;
+      skip = true;
+      startTransition(); // ejecuta inmediatamente
+    });
+
+    // Función que ejecuta la transición de salida
+    async function startTransition() {
       splash.classList.add("fade-out");
       await wait(600);
       splash.remove();
       main.style.display = "flex";
+    }
+
+    // Mostrar splash durante 5 s (a menos que se salte antes)
+    (async () => {
+      await wait(5000);
+      if (!skip) startTransition();
     })();
 
     // 2) Contador
@@ -236,6 +249,7 @@
       window.visualViewport.addEventListener("resize", onVV);
     }
   </script>
+
 
   <!-- Tu módulo de envío -->
   <script type="module" src="/src/send.js"></script>

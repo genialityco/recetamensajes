@@ -1,26 +1,26 @@
 // src/ui/recipeModalSend.js
-//
-// Modal SOLO para la vista de envío (usuarios):
-// - Muestra únicamente "Preparación"
-// - Overlay "Preparando…"
-// - Pergamino en 95vw x 95vh con scroll interno
-// - Estilos no colisionan (prefijo .pmu-*)
 
-// Preload del pergamino para nítidez
+// 💡 Preload del pergamino y los logos
 (() => {
-  const img = new Image();
-  img.src = "/pergamino-01.png";
+  const imgs = [
+    "/pergamino-01.png",
+    "/LOGO_RECETA-GONDOLA.png",
+    "/LOGOS_GONDOLA.png",
+  ];
+  imgs.forEach((src) => {
+    const i = new Image();
+    i.src = src;
+  });
 })();
 
 // ===== Estilos (pergamino + manuscrita) =====
 const style = document.createElement("style");
 style.textContent = `
-  /* Fuentes manuscritas y elegantes */
   @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Shadows+Into+Light+Two&display=swap');
 
   :root {
     --pmu-bg: rgba(10, 12, 18, 0.55);
-    --pmu-ink: #2b1a08; /* tinta café */
+    --pmu-ink: #2b1a08;
     --pmu-ink-sub: #3f2a11;
     --pmu-brd: rgba(0,0,0,.2);
     --pmu-shadow: 0 20px 50px rgba(0,0,0,.5);
@@ -60,10 +60,9 @@ style.textContent = `
   .pmu-title { font-weight: 800; font-size: 18px; margin: 0 0 2px; }
   .pmu-sub { font-size: 13px; color: #b8b9d4; margin: 0; }
 
-  /* Modal pergamino SOLO preparación */
+  /* Modal pergamino */
   .pmu-modal {
     width: 95vw; height: 95vh;
-    max-width: 95vw; max-height: 95vh;
     border: 1px solid var(--pmu-brd);
     border-radius: 12px;
     box-shadow: var(--pmu-shadow);
@@ -74,6 +73,7 @@ style.textContent = `
     color: var(--pmu-ink);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
   .pmu-modal::after {
     content: "";
@@ -83,46 +83,29 @@ style.textContent = `
     pointer-events: none;
   }
 
-.pmu-head {
-  margin-bottom: 2vmin;
-  text-align: center;
-}
+  /* Logos en esquinas */
+  .pmu-logo {
+    position: absolute;
+    top: 2%;
+    width: 150px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.25));
+    opacity: 0.98;
+    pointer-events: none;
+  }
+  .pmu-logo.left  { left: clamp(10px, 2vmin, 24px); }
+  .pmu-logo.right { right: clamp(10px, 2vmin, 24px); }
 
-.pmu-rec-title {
-  margin: 0;
-  font-family: 'Dancing Script', cursive;
-  font-size: clamp(22px, 5.2vmin, 36px);
-  font-weight: 700;
-  text-shadow: 1px 1px 3px rgba(0,0,0,.25);
-  letter-spacing: .3px;
-}
-
-/* Botón de cerrar flotante */
-.pmu-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(40, 30, 20, 0.35);
-  color: #2b1a08;
-  border: 1px solid rgba(0,0,0,.25);
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 18px;
-  font-weight: 700;
-  cursor: pointer;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,.25);
-  transition: background .2s ease, transform .15s ease;
-}
-.pmu-close:hover {
-  background: rgba(100, 80, 60, 0.5);
-  transform: scale(1.1);
-}
-
+  .pmu-head { margin-top: 60px; margin-bottom: 2vmin; text-align: center; }
+  .pmu-rec-title {
+    margin: 0;
+    font-family: 'Dancing+Script', cursive;
+    font-size: clamp(22px, 5.2vmin, 36px);
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0,0,0,.25);
+    letter-spacing: .3px;
+  }
 
   .pmu-body {
     position: relative;
@@ -180,40 +163,25 @@ export function initRecipeModalSend() {
   `;
   document.body.appendChild(overlayEl);
 
-  // Modal SOLO preparación
+  // Modal SOLO preparación (sin botón de cerrar, con logos)
   backdropEl = document.createElement("div");
   backdropEl.className = "pmu-backdrop";
   backdropEl.setAttribute("aria-hidden", "true");
   backdropEl.innerHTML = `
-  <div class="pmu-modal" role="dialog" aria-modal="true" aria-labelledby="pmu-rec-title">
-    <button id="pmu-close" class="pmu-close" type="button" aria-label="Cerrar">✕</button>
-    <div class="pmu-head">
-      <h2 id="pmu-rec-title" class="pmu-rec-title">Receta</h2>
-    </div>
-    <div class="pmu-body">
-      <div class="pmu-prep-label">Preparación</div>
-      <p id="pmu-prep" class="pmu-prep"></p>
-    </div>
-  </div>
-`;
+    <div class="pmu-modal" role="dialog" aria-modal="true" aria-labelledby="pmu-rec-title">
+      <img class="pmu-logo left"  src="/LOGO_RECETA-GONDOLA.png" alt="">
+      <img class="pmu-logo right" src="/LOGOS_GONDOLA.png" alt="">
 
+      <div class="pmu-head">
+        <h2 id="pmu-rec-title" class="pmu-rec-title">Receta</h2>
+      </div>
+      <div class="pmu-body">
+        <div class="pmu-prep-label">Preparación</div>
+        <p id="pmu-prep" class="pmu-prep"></p>
+      </div>
+    </div>
+  `;
   document.body.appendChild(backdropEl);
-
-  // Cierre
-  backdropEl.addEventListener("click", (ev) => {
-    if (ev.target === backdropEl) closeRecipeModalSend();
-  });
-  document
-    .getElementById("pmu-close")
-    ?.addEventListener("click", closeRecipeModalSend);
-  window.addEventListener("keydown", (ev) => {
-    if (
-      ev.key === "Escape" &&
-      backdropEl.getAttribute("aria-hidden") === "false"
-    ) {
-      closeRecipeModalSend();
-    }
-  });
 }
 
 // ===== API =====
