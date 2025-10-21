@@ -1,151 +1,79 @@
-import * as PIXI from "pixi.js";
-import { GlowFilter } from "pixi-filters";
+// Orquestrador principal en JS
+import { initApp, onTick, screen } from "./app/pixiApp.js";
+import { addLegendEntry, initLegend } from "./ui/legend.js";
+import { initBackground, updateBackground } from "./scene/background.js";
+import { initSteam, updateSteam, relayoutSteam } from "./scene/steam.js";
+import {
+  loadIngredientTextures,
+  addIngredient,
+  updateIngredients,
+} from "./ingredients/ingredients.js";
+import { listenPotionMessages } from "./firebase/realtime.js";
 
+// RTDB para leer /controls (estado de receta)
+import { db } from "./firebase/config.js";
+import { ref as dbRef, onValue } from "firebase/database";
 
+// ⬇️ NUEVO: UI del overlay + modal (separado en módulo)
+import {
+  initRecipeModal,
+  setOverlayVisible,
+  openRecipeModal,
+  closeRecipeModal,
+} from "./ui/recipeModal.js";
 
-console.log("🧙‍♂️ Potion Mixer Initialized!");
-// --- PIXI APP ---
-const app = new PIXI.Application();
-await app.init({
-  resizeTo: window,
-  background: "#101018",
-  antialias: true,
+// --- 1) PIXI APP ---
+await initApp();
+
+// --- 2) Bowl virtual (coincide con tu arte) ---
+const bowlArea = {
+  centerX: () => screen().width * 0.52,
+  rimY: () => screen().height * 0.68,
+  spawnW: () => screen().width * 0.32,
+};
+const getBowlArea = () => bowlArea;
+
+// --- 3) UI (leyenda) ---
+initLegend();
+
+// --- 4) Escena: fondo + vapor ---
+await initBackground();
+initSteam(getBowlArea);
+
+// --- 5) Ingredientes ---
+await loadIngredientTextures();
+
+// --- 6) Firebase RTDB ---
+listenPotionMessages(getBowlArea);
+
+// --- 7) Loop de animación ---
+let t = 0;
+onTick(() => {
+  t += 0.016;
+  updateBackground(t);
+  updateSteam(t);
+  updateIngredients(getBowlArea());
 });
-document.body.appendChild(app.canvas);
 
-// --- BOWL SPRITE ---
-let bowlTexture;
-try {
-  bowlTexture = await PIXI.Assets.load("/bowl.png");
-} catch (e) {
-  console.warn("⚠️ No local bowl found, using remote image.");
-  bowlTexture = await PIXI.Assets.load("https://i.imgur.com/92J67G8.png");
+// --- 8) Resize/layout ---
+function layout() {
+  relayoutSteam(); // steamLayer a (0,0)
 }
+layout();
+window.addEventListener("resize", layout);
 
-const bowl = new PIXI.Sprite(bowlTexture);
-bowl.anchor.set(0.5);
-bowl.x = app.screen.width / 2;
-bowl.y = app.screen.height * 0.75;
-bowl.scale.set(0.6);
-app.stage.addChild(bowl);
-
-// --- GLOW EFFECT ---
-const glow = new GlowFilter({
-  distance: 20,
-  outerStrength: 2,
-  innerStrength: 0,
-  color: 0x00ffff,
-  quality: 0.5,
-});
-bowl.filters = [glow];
-
-// --- INGREDIENTS ---
-const ingredients = [];
-
-/**
- * Adds an ingredient (bubble) to the scene.
- * @param {Object} data - { name, message }
- */
-function addIngredient(data = {}) {
-  const { name = "Anon", message = "Hello world!" } = data;
-
-  // Container for everything
-  const bubble = new PIXI.Container();
-
-  // 🫧 Circle (Pixi v8 syntax)
-  const gfx = new PIXI.Graphics();
-  const radius = 20 + Math.random() * 15;
-  gfx.circle(0, 0, radius);
-  gfx.fill({
-    color: 0xffffff * Math.random(),
-    alpha: 0.9,
-  });
-  gfx.filters = [
-    new GlowFilter({
-      color: 0xffcc00,
-      outerStrength: 2,
-      innerStrength: 0,
-      distance: 15,
-    }),
-  ];
-  bubble.addChild(gfx);
-
-  // 👤 Name (above)
-  const nameText = new PIXI.Text({
-    text: name,
-    style: {
-      fontFamily: "Arial",
-      fontSize: 14,
-      fill: 0xffffff,
-      align: "center",
-      fontWeight: "bold",
-      dropShadow: true,
-      dropShadowDistance: 1,
-    },
-  });
-  nameText.anchor.set(0.5, 1);
-  nameText.y = -radius - 8;
-  bubble.addChild(nameText);
-
-  // 💬 Message (below name)
-  const msgText = new PIXI.Text({
-    text: message,
-    style: {
-      fontFamily: "Arial",
-      fontSize: 12,
-      fill: 0xddddff,
-      wordWrap: true,
-      wordWrapWidth: radius * 3,
-      align: "center",
-    },
-  });
-  msgText.anchor.set(0.5, 0);
-  msgText.y = radius + 6;
-  bubble.addChild(msgText);
-
-  // Start pos
-  bubble.x = Math.random() * app.screen.width;
-  bubble.y = -50;
-  bubble.alpha = 0.95;
-
-  app.stage.addChild(bubble);
-  ingredients.push({ sprite: bubble, vy: 2 + Math.random() * 2 });
-}
-
-// --- ANIMATION LOOP ---
-app.ticker.add(() => {
-  for (const obj of ingredients) {
-    obj.sprite.y += obj.vy;
-    obj.sprite.x += Math.sin(obj.sprite.y / 30) * 1.2;
-
-    // Fade out when reaching bowl
-    if (obj.sprite.y > bowl.y - 20) {
-      obj.sprite.alpha *= 0.95;
-      obj.vy *= 0.8;
-      if (obj.sprite.alpha < 0.05) {
-        app.stage.removeChild(obj.sprite);
-      }
-    }
-  }
-});
-
-// --- TEST MESSAGE BUTTON ---
+// --- 9) Botón de prueba (opcional) ---
 const testButton = document.createElement("button");
 testButton.innerText = "📩 Add Test Message";
 testButton.style.cssText = `
-  position:fixed;
-  top:20px; left:20px;
-  padding:10px 15px;
-  font-size:14px;
-  background:#00aaff;
-  color:white;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
+  position:fixed; top:20px; right:20px; z-index:9998;
+  padding:10px 15px; font-size:14px; background:#00aaff; color:white;
+  border:none; border-radius:8px; cursor:pointer;
 `;
 document.body.appendChild(testButton);
 
-const sampleNames = ["Ana", "Luis", "Carla", "Pedro", "Sofía"];
+const sampleFrom = ["Ana", "Luis", "Carla", "Pedro", "Sofía"];
+const sampleFriends = ["Mauro", "Dani", "Val", "Nico", "Sara"];
 const sampleMessages = [
   "¡Esto está genial!",
   "Saludos desde Medellín!",
@@ -153,16 +81,48 @@ const sampleMessages = [
   "🔥 Increíble evento!",
   "🤖 Amo este robot!",
 ];
-
 testButton.onclick = () => {
-  const name = sampleNames[Math.floor(Math.random() * sampleNames.length)];
+  const from = sampleFrom[Math.floor(Math.random() * sampleFrom.length)];
+  const friend =
+    sampleFriends[Math.floor(Math.random() * sampleFriends.length)];
+  const name = `${from} \u2192 ${friend}`;
   const message =
     sampleMessages[Math.floor(Math.random() * sampleMessages.length)];
-  addIngredient({ name, message, timestamp: Date.now() });
+  addIngredient({ name, message, bowlArea: getBowlArea() });
+  addLegendEntry(name, message);
 };
 
-// --- RESIZE ---
-window.addEventListener("resize", () => {
-  bowl.x = app.screen.width / 2;
-  bowl.y = app.screen.height * 0.75;
+/* =========================================================
+   Overlay “Preparando…” + Modal de Receta (separado en ./ui/recipeModal.js)
+   ========================================================= */
+
+// Inicializa el overlay + modal (el modal ya usa /src/assets/pergamino-01.png internamente)
+initRecipeModal();
+
+// Suscripción a /controls
+const controlsRef = dbRef(db, "controls");
+onValue(controlsRef, (snap) => {
+  const c = snap.val() || {};
+  const status = c.status || "idle";
+  const locked = !!c.locked;
+  const recipe = c.recipe || null;
+
+  const isResetting = status === "resetting";
+  const isPreparing = status === "preparing";
+
+  const shouldOverlay = (locked || isPreparing || isResetting) && !recipe;
+  setOverlayVisible(
+    shouldOverlay,
+    isResetting
+      ? "Reiniciando caldero…"
+      : isPreparing
+      ? "Preparando receta final…"
+      : "Cerrando caldero…"
+  );
+
+  if (recipe && status === "ready") {
+    openRecipeModal(recipe);
+  } else {
+    closeRecipeModal();
+  }
 });

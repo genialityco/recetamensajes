@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Enviar mensaje al caldero 🧪</title>
+
+  <!-- Viewport móvil + notch -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1017" />
+
+  <!-- Preload de imágenes para transiciones más rápidas -->
+  <link rel="preload" as="image" href="/splash.jpeg">
+  <link rel="preload" as="image" href="/fondo_form.jpeg">
+
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #0f1017;
+      color: #eaeafb;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: #000 url("/splash.png") center/cover no-repeat;
+      z-index: 100;
+      transition: opacity .6s ease, visibility .6s ease;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+
+    #splash.fade-out {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    main {
+      position: relative;
+      width: 100%;
+      min-height: 100svh;
+      background: url("/fondo_form.png") center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    }
+
+    .card {
+      width: min(560px, 94vw);
+      border: 1px solid #2a2b45;
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+      backdrop-filter: blur(10px);
+      margin-top: 40px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    p.sub {
+      margin: 0 0 14px;
+      color: #b8b9d4;
+      font-size: 13px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #2a2b45;
+      background: #121325;
+      color: #fff;
+      padding: 12px 14px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .muted {
+      color: #a3a4be;
+      font-size: 12px;
+    }
+
+    .actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button {
+      background: #3b82f6;
+      color: white;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 48px;
+      touch-action: manipulation;
+      width: 100%;
+    }
+
+    button[disabled] {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .toast {
+      margin-top: 6px;
+      font-size: 13px;
+    }
+
+    .ok {
+      color: #86efac;
+    }
+
+    .err {
+      color: #fca5a5;
+    }
+
+    @media (min-width: 640px) {
+      h1 {
+        font-size: 20px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Splash -->
+  <div id="splash" aria-hidden="true"></div>
+
+  <!-- Vista principal -->
+  <main id="main" style="display:none;">
+    <div class="card">
+      <h1>Enviar mensaje al caldero 🧪</h1>
+      <p class="sub">Escribe tu nombre, el nombre del nuevo amigo y un mensaje. Al enviarlo, caerá un ingrediente en la
+        sopa en tiempo real.</p>
+
+      <form id="msgForm" novalidate>
+        <label for="fromName">Tu nombre</label>
+        <input id="fromName" name="fromName" placeholder="Tu nombre" maxlength="24" required autocomplete="name"
+          inputmode="text" />
+
+        <label for="friendName">Nombre del nuevo amigo</label>
+        <input id="friendName" name="friendName" placeholder="¿Cómo se llama tu nuevo amigo?" maxlength="24" required
+          autocomplete="nickname" inputmode="text" />
+
+        <div class="row">
+          <label for="message">Mensaje</label>
+          <span class="muted"><span id="chars">0</span>/140</span>
+        </div>
+        <textarea id="message" name="message" placeholder="¿Qué quieres decir?" maxlength="140" required
+          inputmode="text"></textarea>
+
+        <div class="actions">
+          <button id="sendBtn" type="submit">Enviar 🚀</button>
+          <span id="toast" class="toast" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script type="module">
+    // 1) Splash
+    const splash = document.getElementById("splash");
+    const main = document.getElementById("main");
+    const wait = (ms) => new Promise(r => setTimeout(r, ms));
+    const preload = (src) => new Promise(res => { const img = new Image(); img.onload = res; img.onerror = res; img.src = src; });
+
+    (async () => {
+      await Promise.race([Promise.all([preload("/fondo_form.jpeg")]), wait(2000)]);
+      splash.classList.add("fade-out");
+      await wait(600);
+      splash.remove();
+      main.style.display = "flex";
+    })();
+
+    // 2) Contador
+    const msg = document.getElementById("message");
+    const chars = document.getElementById("chars");
+    const updateCount = () => { chars.textContent = String(msg.value.length); };
+    msg.addEventListener("input", updateCount);
+    updateCount();
+
+    // 3) VisualViewport
+    if (window.visualViewport) {
+      const onVV = () => {
+        document.querySelector(".actions")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      };
+      window.visualViewport.addEventListener("resize", onVV);
+    }
+  </script>
+
+  <!-- Tu módulo de envío -->
+  <script type="module" src="/src/send.js"></script>
+  <!-- Viewer de estado: overlay + pergamino (prepOnly) -->
+  <script type="module" src="/src/send_viewer.js"></script>
+</body>
+
+</html>

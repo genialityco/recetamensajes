@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Admin | Mensajes del Caldero</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 16px;
+            display: grid;
+            gap: 16px;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            background: #0f1017;
+            color: #eaeafb;
+        }
+
+        header {
+            display: grid;
+            gap: 8px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #3b82f6;
+            color: #fff;
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        button.secondary {
+            background: #1f2937;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 12px;
+            border: 1px solid #2a2b45;
+            border-radius: 999px;
+            color: #b8b9d4;
+        }
+
+        .muted {
+            color: #a3a4be;
+            font-size: 12px;
+        }
+
+        h3 {
+            margin: 12px 0 6px;
+        }
+
+        input,
+        textarea {
+            background: #121325;
+            border: 1px solid #2a2b45;
+            border-radius: 10px;
+            color: #fff;
+            padding: 10px 12px;
+            min-width: 0;
+            width: 100%;
+        }
+
+        textarea {
+            min-height: 120px;
+        }
+
+        .footer {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .grid {
+            display: grid;
+            gap: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1 style="margin:0;">Administrador de mensajes 🧪</h1>
+        <div class="toolbar">
+            <button id="copyPlain">Copiar texto IA</button>
+            <span id="countPill" class="pill">0 mensajes</span>
+            <span id="livePill" class="pill">En vivo ✓</span>
+            <span id="lockPill" class="pill">Envíos habilitados</span>
+        </div>
+    </header>
+
+    <section class="grid">
+        <div>
+            <h3>Control de sesión</h3>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button id="btnLock" class="secondary">Bloquear envíos</button>
+                <button id="btnIdle" class="secondary">Marcar “idle”</button>
+                <button id="btnPrep" class="secondary">Marcar “preparing”</button>
+                <button id="btnClear" class="secondary">Limpiar receta</button>
+                <button id="btnReset" class="secondary" style="background:#ef4444;">Reiniciar todo</button>
+            </div>
+        </div>
+
+        <div>
+            <h3>Pegar receta de la IA</h3>
+            <div class="grid">
+                <input id="recTitle" placeholder="Título de la receta" />
+                <textarea id="recDesc" placeholder="Descripción breve"></textarea>
+                <textarea id="recIngredients"
+                    placeholder="Ingredientes (uno por línea; ej: 3 cdtas Innovación)"></textarea>
+                <textarea id="recPreparation" placeholder="Preparación / mensaje para participantes"></textarea>
+                <div class="footer">
+                    <button id="btnPublish">Publicar receta</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin JS -->
+    <script type="module" src="/src/admin/admin.js"></script>
+</body>
+
+</html>
