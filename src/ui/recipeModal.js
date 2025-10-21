@@ -3,7 +3,7 @@
 // 💡 Preload del pergamino para que aparezca nítido
 (() => {
   const img = new Image();
-  img.src = "/src/assets/pergamino-01.png";
+  img.src = "/pergamino-01.png";
 })();
 
 // ========== Estilos (pergamino + tipografía manuscrita) ==========
@@ -65,7 +65,7 @@ style.textContent = `
     border: 1px solid var(--pm-brd);
     box-shadow: var(--pm-shadow); 
     
-    background: url("/src/assets/pergamino-01.png") center/cover no-repeat;
+    background: url("/pergamino-01.png") center/cover no-repeat;
     
     padding: clamp(30px, 5vmin, 60px); 
     

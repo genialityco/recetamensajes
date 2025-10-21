@@ -4,8 +4,8 @@ import { GlowFilter } from "@pixi/filter-glow";
 import { KawaseBlurFilter } from "@pixi/filter-kawase-blur";
 
 const ingredientImageURLs = [
-  "/src/assets/images/Tomato_with_Leaf.H03.png",
-  "/src/assets/images/chili_sauce.L16.png",
+  "/images/Tomato_with_Leaf.H03.png",
+  "/images/chili_sauce.L16.png",
 ];
 
 const ingredientTextures = {};

@@ -5,7 +5,7 @@ let bgImage;
 let ambient;
 
 export async function initBackground() {
-  const bgImageTex = await PIXI.Assets.load("/src/assets/images/fondo_bowl.png");
+  const bgImageTex = await PIXI.Assets.load("/images/fondo_bowl.png");
   bgImage = new PIXI.Sprite(bgImageTex);
   bgImage.zIndex = -120;
   bgImage.anchor.set(0);
