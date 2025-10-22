@@ -312,8 +312,6 @@ export function initRecipeModal() {
       <img class="pm-logo left"  src="${BASE}LOGO_RECETA-GONDOLA.png" alt="" />
       <img class="pm-logo right" src="${BASE}LOGOS_GONDOLA.png" alt="" />
 
-      <button id="pm-rec-close" class="pm-close-btn" type="button" aria-label="Cerrar receta">Cerrar</button>
-
       <div class="pm-content-wrapper">
         <h2 id="pm-rec-title" class="pm-title">Receta</h2>
         <p id="pm-rec-desc" class="pm-sub"></p>
