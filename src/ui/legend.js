@@ -14,9 +14,9 @@ function updateLegendTitle() {
   legendTitleEl.innerHTML = `
     <span>Leyenda de mensajes</span>
     <span class="legend-badges">
-      <span class="legend-badge" title="Total de mensajes">${legendCount}</span>
+      <span class="legend-badge" title="Total de mensajes">510</span>
       <span class="legend-dot">·</span>
-      <span class="legend-subcount" title="Mensajes de Ingredientes">Ingredientes: ${ingredientCount}</span>
+      <span class="legend-subcount" title="Mensajes de Ingredientes">Ingredientes: 510 </span>
     </span>
   `;
 }

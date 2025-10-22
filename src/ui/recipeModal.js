@@ -201,7 +201,6 @@ style.textContent = `
     font-weight: 700;
     font-size: 4vmin;
     border-bottom: 2px dashed rgba(0,0,0,0.4);
-    padding-bottom: 8px;
     display:flex; align-items:center; gap:12px; flex-wrap:wrap;
   }
   .pm-badge {
@@ -221,7 +220,7 @@ style.textContent = `
   }
   .pm-ul li {
     position: relative;
-    margin: 3vmin 0;
+    margin: 0.5vmin 0;
     font-size: 4vmin;
     line-height: 1.2;
   }
@@ -314,7 +313,6 @@ export function initRecipeModal() {
 
       <div class="pm-content-wrapper">
         <h2 id="pm-rec-title" class="pm-title">Receta</h2>
-        <p id="pm-rec-desc" class="pm-sub"></p>
 
         <div class="pm-section-title">
           <span>Ingredientes</span>
