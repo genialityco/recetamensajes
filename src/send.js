@@ -10,6 +10,9 @@ const charsEl = document.getElementById("chars");
 const btn = document.getElementById("sendBtn");
 const toast = document.getElementById("toast");
 
+// Helper espera
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
 // 🔒 Evita navegación por si algo falla antes del listener principal
 form.addEventListener("submit", (e) => e.preventDefault(), { once: true });
 
@@ -18,33 +21,39 @@ const updateCount = () => (charsEl.textContent = String(msgEl.value.length));
 msgEl.addEventListener("input", updateCount);
 updateCount();
 
-// Rate limit (5s)
-let lastSent = 0;
+// === SIN rate limit: se permite enviar varias veces ===
+// Mantendremos solo un lock temporal mientras dura el retardo + push
 
 // Estado de bloqueo (live) — con try/catch para no romper el módulo si hay error
+let remotelyBlocked = false;
 try {
   const controlsRef = ref(db, "controls");
   onValue(controlsRef, (snap) => {
     const c = snap.val() || {};
     const locked = !!c.locked;
     const status = c.status || "idle";
-    const blocked = locked || status !== "idle";
-    btn.disabled = blocked;
-    btn.textContent = blocked ? "Envíos deshabilitados" : "Enviar 🚀";
+    remotelyBlocked = locked || status !== "idle";
+
+    // Si NO estamos en medio de un envío manual, refleja el estado del backend
+    if (!btn.dataset.sending) {
+      btn.disabled = remotelyBlocked;
+      btn.textContent = remotelyBlocked ? "Envíos deshabilitados" : "Enviar 🚀";
+    }
   });
 } catch (e) {
   console.warn("[send] No se pudo suscribir a /controls:", e);
 }
 
-// Listener principal de submit (reemplaza el once anterior)
+// Listener principal de submit
 form.addEventListener("submit", async (ev) => {
   ev.preventDefault();
+
+  // limpiar toast
   toast.textContent = "";
   toast.className = "toast";
 
-  const now = Date.now();
-  if (now - lastSent < 5000) {
-    toast.textContent = "Espera unos segundos antes de enviar otro mensaje.";
+  if (remotelyBlocked) {
+    toast.textContent = "En este momento los envíos están deshabilitados.";
     toast.classList.add("err");
     return;
   }
@@ -60,8 +69,19 @@ form.addEventListener("submit", async (ev) => {
   }
 
   try {
+    // Bloqueamos SOLO este envío: permitimos múltiples posteriores
+    btn.dataset.sending = "1";
     btn.disabled = true;
+    btn.textContent = "Preparando…";
 
+    // Aviso previo durante 2s ANTES de publicar
+    toast.textContent = "Mira la pantalla!";
+    toast.classList.remove("ok", "err");
+    toast.classList.add("info");
+
+    await wait(2000); // ⏳ Retardo deseado
+
+    // Publicar tras el retardo
     await push(ref(db, "potionMessages"), {
       from,
       name,
@@ -69,18 +89,21 @@ form.addEventListener("submit", async (ev) => {
       ts: serverTimestamp(),
     });
 
-    lastSent = now;
+    // Limpieza UI
     msgEl.value = "";
     updateCount();
-    toast.textContent = "¡Enviado! Mira el caldero 😉";
+    toast.textContent = "¡Enviado! Deberías ver tu ingrediente en pantalla 😉";
+    toast.classList.remove("err", "info");
     toast.classList.add("ok");
   } catch (err) {
     console.error(err);
     toast.textContent = "No se pudo enviar. Reintenta.";
+    toast.classList.remove("ok", "info");
     toast.classList.add("err");
   } finally {
-    // si el admin bloqueó durante el envío, mantenemos el botón en el estado actual
-    // (onValue lo re-sincroniza igual)
-    if (!btn.disabled) btn.disabled = false;
+    // Liberamos el botón salvo que el backend lo haya bloqueado
+    delete btn.dataset.sending;
+    btn.disabled = remotelyBlocked;
+    btn.textContent = remotelyBlocked ? "Envíos deshabilitados" : "Enviar 🚀";
   }
 });

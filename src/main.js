@@ -70,14 +70,26 @@ layout();
 window.addEventListener("resize", layout);
 
 // --- 9) Botón de prueba (opcional) ---
+// --- 9) Botón de prueba (casi invisible) ---
 const testButton = document.createElement("button");
-testButton.innerText = "📩 Add Test Message";
+testButton.innerText = "📩";
+testButton.title = "Agregar mensaje de prueba"; // aparece solo al pasar el mouse
 testButton.style.cssText = `
-  position:fixed; top:20px; right:20px; z-index:9998;
-  padding:10px 15px; font-size:14px; background:#00aaff; color:white;
-  border:none; border-radius:8px; cursor:pointer;
+  position:fixed; top:14px; right:14px; z-index:9998;
+  padding:4px 6px;
+  font-size:12px;
+  background:#00aaff;
+  color:white;
+  border:none;
+  border-radius:50%;
+  opacity:0.08;
+  cursor:pointer;
+  transition:opacity 0.3s ease;
 `;
+testButton.onmouseenter = () => (testButton.style.opacity = "0.3");
+testButton.onmouseleave = () => (testButton.style.opacity = "0.08");
 document.body.appendChild(testButton);
+
 
 const sampleFrom = ["Ana", "Luis", "Carla", "Pedro", "Sofía"];
 const sampleFriends = ["Mauro", "Dani", "Val", "Nico", "Sara"];
@@ -96,7 +108,7 @@ testButton.onclick = () => {
   const message =
     sampleMessages[Math.floor(Math.random() * sampleMessages.length)];
   addIngredient({ name, message, bowlArea: getBowlArea() });
-  addLegendEntry(name, message);
+  addLegendEntry(name, message,true);
 };
 
 /* =========================================================

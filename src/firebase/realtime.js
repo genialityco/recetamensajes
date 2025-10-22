@@ -34,7 +34,7 @@ export function listenPotionMessages(getBowlArea) {
 
     // Añadir al caldero y a la leyenda
     addIngredient({ name: displayName, message, bowlArea: getBowlArea() });
-    addLegendEntry(displayName, message);
+    addLegendEntry(displayName, message, true);
 
     // Consumir mensaje (cola simple)
     // Comentado ay no se borra: así los mensajes permanecen en RTDB

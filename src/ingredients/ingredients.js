@@ -63,7 +63,7 @@ export function addIngredient({
     text: nm,
     style: {
       fontFamily: "Inter, Arial",
-      fontSize: 14,
+      fontSize: 30,
       fill: 0xffffff,
       align: "center",
       fontWeight: "bold",

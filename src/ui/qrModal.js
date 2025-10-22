@@ -201,16 +201,17 @@ export function setQRMode(mode /* "hidden" | "modal" | "mini" */) {
   if (!qrReady) renderQR();
 
   currentMode = mode;
-  if (mode === "modal") {
-    $overlay.style.display = "flex";
-    $dock.style.display = "none";
-  } else if (mode === "mini") {
-    $overlay.style.display = "none";
-    $dock.style.display = "block";
-  } else {
-    $overlay.style.display = "none";
-    $dock.style.display = "none";
-  }
+
+  const showOverlay = mode === "modal";
+  const showDock = mode === "mini";
+
+  // Toggle displays
+  $overlay.style.display = showOverlay ? "flex" : "none";
+  $dock.style.display = showDock ? "block" : "none";
+
+  // Accesibilidad
+  $overlay.setAttribute("aria-hidden", String(!showOverlay));
+  $dock.setAttribute("aria-hidden", String(!showDock));
 }
 
 // Helpers por compatibilidad

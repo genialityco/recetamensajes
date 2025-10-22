@@ -96,8 +96,12 @@ let allMsgs = []; // {id, from, name, message, ts}
     });
     const mensajePlano = pieces.join(", ");
     const prompt =
-      " De los siguientes mensajes extrae las ideas centrales o más repetidas y entregamela en forma de receta de cocina con la cantidad de ingredientes de cada idea, dejar un resumen, ingredientes y para la preparación enviar a participantes";
-    // Asegura punto antes del prompt si no lo hay
+      "A partir de los siguientes mensajes, identifica 5 ideas centrales o más repetidas y redáctalas en forma de receta de cocina con el siguiente formato exacto, decorada con emojis relacionados con la emoción o el contenido del texto: " +
+      "Titulo: ---titulo--- 🍽️. " +
+      "Descripcion: ---descripcion--- ✨. " +
+      "Lista de ingredientes: muestra la cantidad y el nombre de cada ingrediente en viñetas o guiones, agregando un emoji culinario o emocional por ingrediente. " +
+      "Preparacion: escribe solo la preparación en un solo párrafo, combinando las ideas como si fueran ingredientes de una receta, sin saltos de línea ni numeraciones adicionales, y utiliza algunos emojis coherentes para reforzar el tono del texto.";
+
     const texto = `${mensajePlano}${
       /[.!?]$/.test(mensajePlano) ? "" : "."
     }${prompt}`;
@@ -306,10 +310,11 @@ let allMsgs = []; // {id, from, name, message, ts}
   $btnQRMode?.addEventListener("click", async () => {
     try {
       const snap = await get(controlsRef);
-      const cur = snap.val()?.qrMode || "modal";
-      const next = cur === "modal" ? "mini" : "modal";
+      const cur = snap.val()?.qrMode || "hidden";
+      const order = ["modal", "mini", "hidden"];
+      const next = order[(order.indexOf(cur) + 1) % order.length];
       await setQRMode(next);
-      flash($btnQRMode, "OK");
+      flash($btnQRMode, labelForQR(next)); // feedback rápido
     } catch (e) {
       console.error(e);
       flash($btnQRMode, "Error");
