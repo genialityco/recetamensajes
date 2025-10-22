@@ -38,7 +38,6 @@ let allMsgs = []; // {id, from, name, message, ts}
 /* ---------- Boot ---------- */
 (async function boot() {
   await domReady();
-  console.log("[admin] DOM listo");
 
   // Captura de elementos
   const $copyPlain = byId("copyPlain");
@@ -50,6 +49,7 @@ let allMsgs = []; // {id, from, name, message, ts}
   const $btnPrep = byId("btnPrep");
   const $btnClear = byId("btnClear");
   const $btnReset = byId("btnReset");
+  const $btnQRMode = byId("btnQRMode");
 
   const $recTitle = byId("recTitle");
   const $recDesc = byId("recDesc");
@@ -117,6 +117,18 @@ let allMsgs = []; // {id, from, name, message, ts}
   /* ----- Controls (RTDB) ----- */
   const controlsRef = ref(db, "controls");
 
+  // Helpers QR
+  const labelForQR = (mode) =>
+    mode === "mini"
+      ? "QR: Mini"
+      : mode === "hidden"
+      ? "QR: Oculto"
+      : "QR: Modal";
+
+  async function setQRMode(mode /* 'modal' | 'mini' | 'hidden' */) {
+    await update(controlsRef, { qrMode: mode, updatedAt: Date.now() });
+  }
+
   onValue(controlsRef, (snap) => {
     const c = snap.val() || {};
     const locked = !!c.locked;
@@ -126,6 +138,9 @@ let allMsgs = []; // {id, from, name, message, ts}
         : "Envíos habilitados";
       $lockPill.style.borderColor = locked ? "#ef4444" : "#2a2b45";
     }
+    // Reflejar estado actual del QR en el botón
+    const qrMode = c.qrMode || "modal"; // default: modal
+    if ($btnQRMode) $btnQRMode.textContent = labelForQR(qrMode);
   });
 
   async function setLocked(locked) {
@@ -284,6 +299,20 @@ let allMsgs = []; // {id, from, name, message, ts}
     } catch (e) {
       console.error(e);
       flash($btnPublish, "Error");
+    }
+  });
+
+  // Alternar QR: modal ↔ mini (si quieres ciclo con 'hidden', cambia el next)
+  $btnQRMode?.addEventListener("click", async () => {
+    try {
+      const snap = await get(controlsRef);
+      const cur = snap.val()?.qrMode || "modal";
+      const next = cur === "modal" ? "mini" : "modal";
+      await setQRMode(next);
+      flash($btnQRMode, "OK");
+    } catch (e) {
+      console.error(e);
+      flash($btnQRMode, "Error");
     }
   });
 

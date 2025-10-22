@@ -9,6 +9,7 @@ import {
   updateIngredients,
 } from "./ingredients/ingredients.js";
 import { listenPotionMessages } from "./firebase/realtime.js";
+import { initQRModal, setQRMode } from "./ui/qrModal.js";
 
 // RTDB para leer /controls (estado de receta)
 import { db } from "./firebase/config.js";
@@ -27,6 +28,9 @@ import { initSound } from "./audio/sound.js";
 await initApp();
 
 initSound();
+
+initRecipeModal();
+initQRModal();
 
 // --- 2) Bowl virtual (coincide con tu arte) ---
 const bowlArea = {
@@ -110,9 +114,14 @@ onValue(controlsRef, (snap) => {
   const locked = !!c.locked;
   const recipe = c.recipe || null;
 
+  // === NUEVO: manejar estado del QR ===
+  // valores esperados: "modal" | "mini" | "hidden" (por defecto "hidden" si no existe)
+  const qrMode = c.qrMode || "hidden";
+  setQRMode(qrMode);
+
+  // --- tu overlay "Preparando..." existente ---
   const isResetting = status === "resetting";
   const isPreparing = status === "preparing";
-
   const shouldOverlay = (locked || isPreparing || isResetting) && !recipe;
   setOverlayVisible(
     shouldOverlay,
@@ -123,6 +132,7 @@ onValue(controlsRef, (snap) => {
       : "Cerrando caldero…"
   );
 
+  // --- modal de receta ---
   if (recipe && status === "ready") {
     openRecipeModal(recipe);
   } else {
