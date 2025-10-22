@@ -141,7 +141,7 @@ onValue(controlsRef, (snap) => {
       ? "Reiniciando caldero…"
       : isPreparing
       ? "Preparando receta final…"
-      : "Cerrando caldero…"
+      : "Preparando la cocina"
   );
 
   // --- modal de receta ---

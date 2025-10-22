@@ -157,7 +157,7 @@ export function initRecipeModalSend() {
       <div class="pmu-spin" aria-hidden="true"></div>
       <div>
         <div class="pmu-title">Preparando receta final…</div>
-        <p class="pmu-sub">Danos un momento mientras mezclamos la pócima ✨</p>
+        <p class="pmu-sub">Danos un momento mientras preparamos la cocina ✨</p>
       </div>
     </div>
   `;
